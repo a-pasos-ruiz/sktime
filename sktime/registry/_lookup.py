@@ -14,21 +14,20 @@ all_tags(estimator_types)
 
 import inspect
 import pkgutil
-import pandas as pd
-
+from copy import deepcopy
 from importlib import import_module
 from operator import itemgetter
 from pathlib import Path
 
+import pandas as pd
+
 from sktime.base import BaseEstimator
-
-from sktime.registry._tags import ESTIMATOR_TAG_REGISTER
-
 from sktime.registry._base_classes import (
-    TRANSFORMER_MIXIN_LIST,
     BASE_CLASS_LIST,
     BASE_CLASS_LOOKUP,
+    TRANSFORMER_MIXIN_LIST,
 )
+from sktime.registry._tags import ESTIMATOR_TAG_REGISTER
 
 VALID_TRANSFORMER_TYPES = tuple(TRANSFORMER_MIXIN_LIST)
 VALID_ESTIMATOR_BASE_TYPES = tuple(BASE_CLASS_LIST)
@@ -59,13 +58,14 @@ def all_estimators(
     ----------
     estimator_types: string, list of string, optional (default=None)
         Which kind of estimators should be returned.
-        - If None, no filter is applied and all estimators are returned.
-        - Possible values are 'classifier', 'regressor', 'transformer' and
-        'forecaster' to get estimators only of these specific types, or a list of
-        these to get the estimators that fit at least one of the types.
+        if None, no filter is applied and all estimators are returned.
+        if str or list of str, strings define scitypes specified in search
+                only estimators that are of (at least) one of the scitypes are returned
+            possible str values are entries of registry.BASE_CLASS_REGISTER (first col)
+                for instance 'classifier', 'regressor', 'transformer', 'forecaster'
     return_names: bool, optional (default=True)
-        If True, return estimators as list of (name, estimator) tuples.
-        If False, return list of estimators.
+        If True, return estimators as list of (name, estimator class) tuples.
+        If False, return list of estimators classes.
     filter_tags: dict of (str or list of str), optional (default=None)
         subsets the returned estimators as follows:
             each key/value pair is statement in "and"/conjunction
@@ -80,8 +80,8 @@ def all_estimators(
 
     Returns
     -------
-    estimators: list of class, if return_names=True,
-            or list of tuples (str, class), if return_names=False
+    estimators: list of class, if return_names=False,
+            or list of tuples (str, class), if return_names=True
         if list of estimators:
             entries are estimator classes matching the query,
             in alphabetical order of class name
@@ -284,11 +284,31 @@ def all_tags(
                 ("list", list_of_string) - any individual string and sub-list is valid
         d : string - plain English description of the tag
     """
+
+    def is_tag_for_type(tag, estimator_types):
+        tag_types = tag[1]
+        if isinstance(tag_types, str):
+            tag_types = [tag_types]
+        elif not isinstance(tag_types, list):
+            raise ValueError(
+                "Error in ESTIMATOR_TAG_REGISTER, "
+                "2nd entries of register tuples must be list or list of str"
+            )
+        if isinstance(estimator_types, str):
+            estimator_types = [estimator_types]
+
+        tag_types = set(tag_types)
+        estimator_types = set(estimator_types)
+        is_valid_tag_for_type = len(tag_types.intersection(estimator_types)) > 0
+
+        return is_valid_tag_for_type
+
     all_tags = ESTIMATOR_TAG_REGISTER
 
     if estimator_types is not None:
-        estimator_types = _check_estimator_types(estimator_types)
-        all_tags = [tag for tag in all_tags if tag[1] in estimator_types]
+        # checking, but not using the return since that is classes, not strings
+        _check_estimator_types(estimator_types)
+        all_tags = [tag for tag in all_tags if is_tag_for_type(tag, estimator_types)]
 
     all_tags = sorted(all_tags, key=itemgetter(0))
 
@@ -301,6 +321,9 @@ def all_tags(
 
 
 def _check_estimator_types(estimator_types):
+    """Return list of classes corresponding to type strings."""
+    estimator_types = deepcopy(estimator_types)
+
     if not isinstance(estimator_types, list):
         estimator_types = [estimator_types]  # make iterable
 
