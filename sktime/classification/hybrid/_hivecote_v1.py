@@ -122,6 +122,18 @@ class HIVECOTEV1(BaseClassifier):
         n_jobs=1,
         random_state=None,
     ):
+<<<<<<< HEAD
+        if stc_params is None:
+            stc_params = {}
+        if tsf_params is None:
+            tsf_params = {"n_estimators": 500}
+        if rise_params is None:
+            rise_params = {"n_estimators": 500}
+        if cboss_params is None:
+            cboss_params = {}
+
+=======
+>>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         self.stc_params = stc_params
         self.tsf_params = tsf_params
         self.rise_params = rise_params

@@ -106,8 +106,7 @@ class MUSE(BaseClassifier):
     _tags = {
         "capability:multivariate": True,
         "capability:multithreading": True,
-        "coerce-X-to-numpy": False,
-        "coerce-X-to-pandas": True,
+        "X_inner_mtype": "nested_univ",  # MUSE requires nested datafrane
     }
 
     def __init__(
