@@ -5,61 +5,22 @@ Shapelet transform classifier pipeline that simply performs a (configurable) sha
 transform then builds (by default) a rotation forest classifier on the output.
 """
 
-<<<<<<< HEAD
-__author__ = ["TonyBagnall", "a-pasos-ruiz", "MatthewMiddlehurst"]
-=======
 __author__ = ["TonyBagnall", "MatthewMiddlehurst"]
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 __all__ = ["ShapeletTransformClassifier"]
 
 import numpy as np
 from sklearn.model_selection import cross_val_predict
-<<<<<<< HEAD
-from sklearn.utils.multiclass import class_distribution
-
-from sktime.base._base import _clone_estimator
-from sktime.classification.base import BaseClassifier
-from sktime.classification.shapelet_based.dev.factories.shapelet_factory import (
-    ShapeletFactoryIndependent,
-)
-from sktime.classification.shapelet_based.dev.filters.random_filter import RandomFilter
-from sktime.contrib.vector_classifiers._rotation_forest import RotationForest
-from sktime.transformations.panel.shapelet_transform import ShapeletTransform
-from sktime.utils.validation import check_n_jobs
-=======
 
 from sktime.base._base import _clone_estimator
 from sktime.classification.base import BaseClassifier
 from sktime.contrib.vector_classifiers._rotation_forest import RotationForest
 from sktime.transformations.panel.shapelet_transform import RandomShapeletTransform
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 from sktime.utils.validation.panel import check_X_y
 
 
 class ShapeletTransformClassifier(BaseClassifier):
     """Shapelet Transform Classifier.
 
-<<<<<<< HEAD
-    TODO
-    Basic implementation along the lines of [1,2]
-
-    Parameters
-    ----------
-    n_shapelets_considered : int, default=10000
-
-    max_shapelets : int or None, default=None
-
-    max_shapelet_length : int or None, default=None
-
-    estimator : BaseEstimator or None, default=None
-
-    transform_limit_in_minutes : int, default=60
-        Time contract to limit transform time in minutes for the shapelet transform,
-        overriding n_shapelets. A value of 0 means n_shapelets is used.
-    time_limit_in_minutes : int, default=0
-        Time contract to limit build time in minutes, overriding n_estimators.
-        Default of 0 means n_estimators is used.
-=======
     Implementation of the binary shapelet transform classifier along the lines
     of [1]_[2]_. Transforms the data using the configurable shapelet transform and then
     builds a rotation forest classifier.
@@ -68,7 +29,7 @@ class ShapeletTransformClassifier(BaseClassifier):
 
     Parameters
     ----------
-    n_shapelet_samples : int, default=100000
+    n_shapelet_samples : int, default=10000
         The number of candidate shapelets to be considered for the final transform.
         Filtered down to <= max_shapelets, keeping the shapelets with the most
         information gain.
@@ -92,19 +53,14 @@ class ShapeletTransformClassifier(BaseClassifier):
     contract_max_n_shapelet_samples : int, default=np.inf
         Max number of shapelets to extract when contracting the transform with
         transform_limit_in_minutes or time_limit_in_minutes.
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
     save_transformed_data : bool, default=False
         Save the data transformed in fit for use in _get_train_probs.
     n_jobs : int, default=1
         The number of jobs to run in parallel for both `fit` and `predict`.
         ``-1`` means using all processors.
-<<<<<<< HEAD
-=======
-    batch_size : int or None, default=None
+    batch_size : int or None, default=100
         Number of shapelet candidates processed before being merged into the set of best
-        shapelets in the transform. If none the max of n_instances and max_shapelets is
-        used.
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
+        shapelets in the transform.
     random_state : int or None, default=None
         Seed for random number generation.
 
@@ -112,15 +68,6 @@ class ShapeletTransformClassifier(BaseClassifier):
     ----------
     n_classes : int
         The number of classes.
-<<<<<<< HEAD
-    n_instances : int
-        The number of train cases.
-    n_dims : int
-        The number of dimensions per case.
-    classes_ : list
-        The classes labels.
-    transformed_data : list of shape (n_estimators) of ndarray
-=======
     classes_ : list
         The classes labels.
     n_instances_ : int
@@ -130,17 +77,12 @@ class ShapeletTransformClassifier(BaseClassifier):
     series_length_ : int
         The length of each series.
     transformed_data_ : list of shape (n_estimators) of ndarray
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         The transformed dataset for all classifiers. Only saved when
         save_transformed_data is true.
 
     See Also
     --------
-<<<<<<< HEAD
-    RotationForest
-=======
     RandomShapeletTransform
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
     Notes
     -----
@@ -164,16 +106,10 @@ class ShapeletTransformClassifier(BaseClassifier):
     >>> X_train, y_train = load_unit_test(split="train", return_X_y=True)
     >>> X_test, y_test = load_unit_test(split="test", return_X_y=True)
     >>> clf = ShapeletTransformClassifier(
-<<<<<<< HEAD
-    ...     estimator=RotationForest(n_estimators=10),
-    ...     n_shapelets_considered=100,
-    ...     max_shapelets=10,
-=======
     ...     estimator=RotationForest(n_estimators=3),
     ...     n_shapelet_samples=500,
     ...     max_shapelets=20,
     ...     batch_size=100,
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
     ... )
     >>> clf.fit(X_train, y_train)
     ShapeletTransformClassifier(...)
@@ -182,139 +118,31 @@ class ShapeletTransformClassifier(BaseClassifier):
 
     _tags = {
         "capability:multivariate": True,
-<<<<<<< HEAD
-        "capability:unequal_length": False,
-        "capability:missing_values": False,
-        "capability:train_estimate": True,
-        "capability:contractable": True,
-=======
         "capability:train_estimate": True,
         "capability:contractable": True,
         "capability:multithreading": True,
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
     }
 
     def __init__(
         self,
-<<<<<<< HEAD
-        n_shapelets_considered=50000,
-=======
-        n_shapelet_samples=100000,
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
+        n_shapelet_samples=10000,
         max_shapelets=None,
         max_shapelet_length=None,
         estimator=None,
         transform_limit_in_minutes=0,
         time_limit_in_minutes=0,
-<<<<<<< HEAD
-        save_transformed_data=False,
-        n_jobs=1,
-        random_state=None,
-    ):
-        self.n_shapelets_considered = n_shapelets_considered
-=======
         contract_max_n_shapelet_samples=np.inf,
         save_transformed_data=False,
         n_jobs=1,
-        batch_size=None,
+        batch_size=100,
         random_state=None,
     ):
         self.n_shapelet_samples = n_shapelet_samples
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         self.max_shapelets = max_shapelets
         self.max_shapelet_length = max_shapelet_length
         self.estimator = estimator
 
         self.transform_limit_in_minutes = transform_limit_in_minutes
-<<<<<<< HEAD
-        # TODO
-        self.time_limit_in_minutes = time_limit_in_minutes
-        self.save_transformed_data = save_transformed_data
-
-        self.random_state = random_state
-        self.n_jobs = n_jobs
-
-        self.n_instances = 0
-        self.n_dims = 0
-        self.series_length = 0
-        self.n_classes = 0
-        self.classes_ = []
-        self.transformed_data = []
-
-        self._max_shapelets = max_shapelets
-        self._max_shapelet_length = max_shapelet_length
-        self._transformer = None
-        self._estimator = estimator
-        self._n_jobs = n_jobs
-        self._transform_limit_in_minutes = 0
-        self._classifier_limit_in_minutes = 0
-
-        super(ShapeletTransformClassifier, self).__init__()
-
-    def _fit(self, X, y):
-        self._n_jobs = check_n_jobs(self.n_jobs)
-
-        self.n_instances, self.n_dims, self.series_length = X.shape
-        self.n_classes = np.unique(y).shape[0]
-        self.classes_ = class_distribution(np.asarray(y).reshape(-1, 1))[0][0]
-
-        if self.max_shapelet_length is None:
-            self._max_shapelet_length = self.series_length
-
-        if self.max_shapelets is None:
-            self._max_shapelets = (
-                10 * self.n_instances if 10 * self.n_instances < 1000 else 1000
-            )
-
-        # contracting 2/3 transform (with 1/5 of that taken away for final transform), 1/3 classifier
-
-        self._transformer = (
-            RandomFilter(         # TODO
-                shapelet_factory=ShapeletFactoryIndependent(),
-                max_shapelet_length=self._max_shapelet_length,
-                num_shapelets=self._max_shapelets,
-                num_iterations=self.n_shapelets_considered,
-                #    time_contract_in_mins=self.transform_contract_in_mins,
-                #    verbose=False,
-                random_state=self.random_state,
-            )
-            if self.n_dims > 1
-            else ShapeletTransform(
-                n_shapelets_considered=self.n_shapelets_considered,
-                max_shapelets=self._max_shapelets,
-                max_shapelet_length=self._max_shapelet_length,
-                time_limit_in_minutes=self._transform_limit_in_minutes,
-                n_jobs=self.n_jobs,
-                random_state=self.random_state,
-            )
-        )
-
-        self._estimator = _clone_estimator(
-            RotationForest() if self.estimator is None else self.estimator,
-            self.random_state,
-        )
-
-        if isinstance(self._estimator, RotationForest):
-            self._estimator.save_transformed_data = self.save_transformed_data
-
-        m = getattr(self._estimator, "n_jobs", None)
-        if callable(m):
-            self._estimator.n_jobs = self._n_jobs
-
-        X_t = self._transformer.fit_transform(X, y).to_numpy()
-
-        if self.save_transformed_data:
-            self.transformed_data = X_t
-
-        self._estimator.fit(X_t, y)
-
-    def _predict(self, X):
-        X_t = self._transformer.transform(X).to_numpy()
-
-        return self._estimator.predict(X_t)
-
-    def _predict_proba(self, X):
-=======
         self.time_limit_in_minutes = time_limit_in_minutes
         self.contract_max_n_shapelet_samples = contract_max_n_shapelet_samples
         self.save_transformed_data = save_transformed_data
@@ -432,18 +260,13 @@ class ShapeletTransformClassifier(BaseClassifier):
         y : array-like, shape = [n_instances, n_classes_]
             Predicted probabilities using the ordering in classes_.
         """
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         X_t = self._transformer.transform(X).to_numpy()
 
         m = getattr(self._estimator, "predict_proba", None)
         if callable(m):
             return self._estimator.predict_proba(X_t)
         else:
-<<<<<<< HEAD
-            dists = np.zeros((X.shape[0], self.n_classes))
-=======
             dists = np.zeros((X.shape[0], self.n_classes_))
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
             preds = self._estimator.predict(X_t)
             for i in range(0, X.shape[0]):
                 dists[i, np.where(self.classes_ == preds[i])] = 1
@@ -455,13 +278,9 @@ class ShapeletTransformClassifier(BaseClassifier):
 
         n_instances, n_dims = X.shape
 
-<<<<<<< HEAD
-        if n_instances != self.n_instances or n_dims != self.n_dims:
-=======
         if n_instances != self.n_instances_ or n_dims != self.n_dims_:
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
             raise ValueError(
-                "n_instances, n_dims, series_length mismatch. X should be "
+                "n_instances, n_dims mismatch. X should be "
                 "the same as the training data used in fit for generating train "
                 "probabilities."
             )
@@ -469,13 +288,8 @@ class ShapeletTransformClassifier(BaseClassifier):
         if not self.save_transformed_data:
             raise ValueError("Currently only works with saved transform data from fit.")
 
-<<<<<<< HEAD
-        if isinstance(self.estimator, RotationForest):
-            return self._estimator._get_train_probs(self.transformed_data, y)
-=======
         if isinstance(self.estimator, RotationForest) or self.estimator is None:
             return self._estimator._get_train_probs(self.transformed_data_, y)
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         else:
             m = getattr(self._estimator, "predict_proba", None)
             if not callable(m):
@@ -491,17 +305,9 @@ class ShapeletTransformClassifier(BaseClassifier):
 
             return cross_val_predict(
                 estimator,
-<<<<<<< HEAD
-                X=self.transformed_data,
-                y=y,
-                cv=cv_size,
-                method="predict_proba",
-                n_jobs=self._n_jobs,
-=======
                 X=self.transformed_data_,
                 y=y,
                 cv=cv_size,
                 method="predict_proba",
                 n_jobs=self._threads_to_use,
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
             )

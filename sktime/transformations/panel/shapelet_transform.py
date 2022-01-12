@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-<<<<<<< HEAD
-
-__author__ = ["MatthewMiddlehurst", "Jason Lines", "David Guijo"]
-__all__ = ["ShapeletTransform"]
-=======
 """Random binary shapelet transformation.
 
 A transformer from the time domain into the shapelet domain. Randomly samples shapelets
@@ -12,7 +7,6 @@ to use in the transformation, with capabilities for contracting.
 
 __author__ = ["MatthewMiddlehurst", "jasonlines", "dguijo"]
 __all__ = ["RandomShapeletTransform"]
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
 import heapq
 import math
@@ -22,25 +16,13 @@ import warnings
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
-<<<<<<< HEAD
-from numba import njit, NumbaPendingDeprecationWarning
-=======
 from numba import NumbaPendingDeprecationWarning, njit
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
+from sklearn import preprocessing
 from sklearn.utils import check_random_state
 
 from sktime.transformations.base import _PanelToTabularTransformer
+from sktime.utils.numba.general import z_normalise_series
 from sktime.utils.validation import check_n_jobs
-<<<<<<< HEAD
-from sktime.utils.validation.panel import check_X_y, check_X
-
-
-class ShapeletTransform(_PanelToTabularTransformer):
-    def __init__(
-        self,
-        n_shapelets_considered=50000,
-        max_shapelets=1000,
-=======
 from sktime.utils.validation.panel import check_X, check_X_y
 
 
@@ -68,7 +50,7 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
 
     Parameters
     ----------
-    n_shapelet_samples : int, default=100000
+    n_shapelet_samples : int, default=10000
         The number of candidate shapelets to be considered for the final transform.
         Filtered down to <= max_shapelets, keeping the shapelets with the most
         information gain.
@@ -90,9 +72,9 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
     n_jobs : int, default=1
         The number of jobs to run in parallel for both `fit` and `transform`.
         ``-1`` means using all processors.
-    batch_size : int or None, default=None
+    batch_size : int or None, default=100
         Number of shapelet candidates processed before being merged into the set of best
-        shapelets. If none the max of n_instances and max_shapelets is used.
+        shapelets.
     random_state : int or None, default=None
         Seed for random number generation.
 
@@ -154,38 +136,25 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
 
     def __init__(
         self,
-        n_shapelet_samples=100000,
+        n_shapelet_samples=10000,
         max_shapelets=None,
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         min_shapelet_length=3,
         max_shapelet_length=None,
         remove_self_similar=True,
         time_limit_in_minutes=0.0,
-<<<<<<< HEAD
-        contract_max_n_shapelets_considered=np.inf,
-=======
         contract_max_n_shapelet_samples=np.inf,
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         n_jobs=1,
-        batch_size=None,
+        batch_size=100,
         random_state=None,
     ):
-<<<<<<< HEAD
-        self.n_shapelet_samples = n_shapelets_considered
-=======
         self.n_shapelet_samples = n_shapelet_samples
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         self.max_shapelets = max_shapelets
         self.min_shapelet_length = min_shapelet_length
         self.max_shapelet_length = max_shapelet_length
         self.remove_self_similar = remove_self_similar
 
         self.time_limit_in_minutes = time_limit_in_minutes
-<<<<<<< HEAD
-        self.contract_max_n_shapelet_samples = contract_max_n_shapelets_considered
-=======
         self.contract_max_n_shapelet_samples = contract_max_n_shapelet_samples
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
         self.n_jobs = n_jobs
         self.batch_size = batch_size
@@ -199,11 +168,8 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         self.classes_ = []
         self.shapelets = []
 
-<<<<<<< HEAD
-=======
         self._n_shapelet_samples = n_shapelet_samples
         self._max_shapelets = max_shapelets
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         self._max_shapelet_length = max_shapelet_length
         self._n_jobs = n_jobs
         self._batch_size = batch_size
@@ -211,12 +177,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         self._class_dictionary = {}
         self._sorted_indicies = []
 
-<<<<<<< HEAD
-        super(ShapeletTransform, self).__init__()
-
-    def fit(self, X, y):
-        X, y = check_X_y(X, y, enforce_univariate=False, coerce_to_numpy=True)
-=======
         super(RandomShapeletTransform, self).__init__()
 
     def fit(self, X, y):
@@ -238,7 +198,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
 
         # this is a few versions away currently, and heaps dont support the replacement
         warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
         self._n_jobs = check_n_jobs(self.n_jobs)
 
@@ -247,21 +206,13 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         for index, classVal in enumerate(self.classes_):
             self._class_dictionary[classVal] = index
 
-        self.n_instances, self.n_dims, self.series_length = X.shape
+        le = preprocessing.LabelEncoder()
+        y = le.fit_transform(y)
 
-<<<<<<< HEAD
-        if self.batch_size is None:
-            self._batch_size = max(self.n_instances, self.max_shapelets)
-=======
-        # if self.n_shapelet_samples is None:
-        #     self._n_shapelet_samples = ??? todo find good default
+        self.n_instances, self.n_dims, self.series_length = X.shape
 
         if self.max_shapelets is None:
             self._max_shapelets = min(10 * self.n_instances, 1000)
-
-        if self.batch_size is None:
-            self._batch_size = max(self.n_instances, self._max_shapelets)
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
         if self.max_shapelet_length is None:
             self._max_shapelet_length = self.series_length
@@ -270,20 +221,10 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         start_time = time.time()
         fit_time = 0
 
-<<<<<<< HEAD
-        max_shapelets_per_class = self.max_shapelets / self.n_classes
-        shapelets = [[(-1.0, -1, -1, -1, -1)] for _ in range(self.n_classes)]
-        n_shapelets_extracted = 0
-
-        # this is a few versions away currently, and heaps dont support the replacement
-        warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
-
-=======
         max_shapelets_per_class = self._max_shapelets / self.n_classes
         shapelets = [[(-1.0, -1, -1, -1, -1, -1)] for _ in range(self.n_classes)]
         n_shapelets_extracted = 0
 
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         if time_limit > 0:
             while (
                 fit_time < time_limit
@@ -301,11 +242,7 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
                 )
 
                 for i, heap in enumerate(shapelets):
-<<<<<<< HEAD
-                    ShapeletTransform._merge_shapelets(
-=======
                     RandomShapeletTransform._merge_shapelets(
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
                         heap,
                         candidate_shapelets,
                         max_shapelets_per_class,
@@ -314,33 +251,20 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
 
                 if self.remove_self_similar:
                     for i, heap in enumerate(shapelets):
-<<<<<<< HEAD
-                        to_keep = ShapeletTransform._remove_self_similar_shapelets(heap)
-=======
                         to_keep = (
                             RandomShapeletTransform._remove_self_similar_shapelets(heap)
                         )
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
                         shapelets[i] = [n for (n, b) in zip(heap, to_keep) if b]
 
                 n_shapelets_extracted += self._batch_size
                 fit_time = time.time() - start_time
         else:
-<<<<<<< HEAD
-            while n_shapelets_extracted < self.n_shapelet_samples:
-                n_shapelets_to_extract = (
-                    self._batch_size
-                    if n_shapelets_extracted + self._batch_size
-                    <= self.n_shapelet_samples
-                    else self.n_shapelet_samples - n_shapelets_extracted
-=======
             while n_shapelets_extracted < self._n_shapelet_samples:
                 n_shapelets_to_extract = (
                     self._batch_size
                     if n_shapelets_extracted + self._batch_size
                     <= self._n_shapelet_samples
                     else self._n_shapelet_samples - n_shapelets_extracted
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
                 )
 
                 candidate_shapelets = Parallel(n_jobs=self._n_jobs)(
@@ -355,11 +279,7 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
                 )
 
                 for i, heap in enumerate(shapelets):
-<<<<<<< HEAD
-                    ShapeletTransform._merge_shapelets(
-=======
                     RandomShapeletTransform._merge_shapelets(
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
                         heap,
                         candidate_shapelets,
                         max_shapelets_per_class,
@@ -368,13 +288,9 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
 
                 if self.remove_self_similar:
                     for i, heap in enumerate(shapelets):
-<<<<<<< HEAD
-                        to_keep = ShapeletTransform._remove_self_similar_shapelets(heap)
-=======
                         to_keep = (
                             RandomShapeletTransform._remove_self_similar_shapelets(heap)
                         )
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
                         shapelets[i] = [n for (n, b) in zip(heap, to_keep) if b]
 
                 n_shapelets_extracted += n_shapelets_to_extract
@@ -385,23 +301,9 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
                 s[1],
                 s[2],
                 s[3],
-<<<<<<< HEAD
-                self.classes_[s[4]],
-                _z_norm(X[s[3], 0, s[2] : s[2] + s[1]]),
-            )
-            for class_shapelets in shapelets
-            for s in class_shapelets
-        ]
-        self.shapelets = [shapelet for shapelet in self.shapelets if shapelet[0] > 0]
-        self.shapelets.sort(reverse=True)
-
-        self._sorted_indicies = []
-        for s in self.shapelets:
-            sabs = np.abs(s[5])
-=======
                 s[4],
                 self.classes_[s[5]],
-                _z_norm(X[s[4], s[3], s[2] : s[2] + s[1]]),
+                z_normalise_series(X[s[4], s[3], s[2] : s[2] + s[1]]),
             )
             for class_shapelets in shapelets
             for s in class_shapelets
@@ -415,7 +317,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         self._sorted_indicies = []
         for s in self.shapelets:
             sabs = np.abs(s[6])
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
             self._sorted_indicies.append(
                 sorted(range(s[1]), reverse=True, key=lambda i: sabs[i])
             )
@@ -424,10 +325,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         return self
 
     def transform(self, X, y=None):
-<<<<<<< HEAD
-        self.check_is_fitted()
-        X = check_X(X, enforce_univariate=True, coerce_to_numpy=True)
-=======
         """Transform X according to the extracted shapelets.
 
         Parameters
@@ -445,33 +342,22 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
 
         # this is a few versions away currently, and heaps dont support the replacement
         warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
         output = np.zeros((len(X), len(self.shapelets)))
 
         for i, series in enumerate(X):
-<<<<<<< HEAD
-            for n, shapelet in enumerate(self.shapelets):
-                output[i][n] = _online_shapelet_distance(
-                    series[0],
-                    shapelet[5],
-=======
             dists = Parallel(n_jobs=self._n_jobs)(
                 delayed(_online_shapelet_distance)(
                     series[shapelet[3]],
                     shapelet[6],
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
                     self._sorted_indicies[n],
                     shapelet[2],
                     shapelet[1],
                 )
-<<<<<<< HEAD
-=======
                 for n, shapelet in enumerate(self.shapelets)
             )
 
             output[i] = dists
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
         return pd.DataFrame(output)
 
@@ -485,7 +371,7 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         rng = check_random_state(rs)
 
         inst_idx = i % self.n_instances
-        cls_idx = self._class_dictionary[y[inst_idx]]
+        cls_idx = int(y[inst_idx])
         worst_quality = (
             shapelets[cls_idx][0][0] if shapelets == max_shapelets_per_class else -1
         )
@@ -495,43 +381,27 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
             + self.min_shapelet_length
         )
         position = rng.randint(0, self.series_length - length)
-<<<<<<< HEAD
-
-        shapelet = _z_norm(X[inst_idx, 0, position : position + length])
-        sabs = np.abs(shapelet)
-        sorted_indicies = sorted(range(length), reverse=True, key=lambda i: sabs[i])
-
-        quality = ShapeletTransform._find_shapelet_quality(
-=======
         dim = rng.randint(0, self.n_dims)
 
-        shapelet = _z_norm(X[inst_idx, dim, position : position + length])
+        shapelet = z_normalise_series(X[inst_idx, dim, position : position + length])
         sabs = np.abs(shapelet)
         sorted_indicies = sorted(range(length), reverse=True, key=lambda i: sabs[i])
 
         quality = RandomShapeletTransform._find_shapelet_quality(
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
             X,
             y,
             shapelet,
             sorted_indicies,
             position,
             length,
-<<<<<<< HEAD
-=======
             dim,
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
             inst_idx,
             self._class_counts[cls_idx],
             self.n_instances - self._class_counts[cls_idx],
             worst_quality,
         )
 
-<<<<<<< HEAD
-        return quality, length, position, inst_idx, cls_idx
-=======
         return quality, length, position, dim, inst_idx, cls_idx
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
     @staticmethod
     @njit(fastmath=True, cache=True)
@@ -542,15 +412,13 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         sorted_indicies,
         position,
         length,
-<<<<<<< HEAD
-=======
         dim,
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
         inst_idx,
         this_cls_count,
         other_cls_count,
         worst_quality,
     ):
+        # todo optimise this more, we spend 99% of time here
         orderline = []
         this_cls_traversed = 0
         other_cls_traversed = 0
@@ -558,11 +426,7 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         for i, series in enumerate(X):
             if i != inst_idx:
                 distance = _online_shapelet_distance(
-<<<<<<< HEAD
-                    series[0], shapelet, sorted_indicies, position, length
-=======
                     series[dim], shapelet, sorted_indicies, position, length
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
                 )
             else:
                 distance = 0
@@ -577,23 +441,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
             orderline.append((distance, cls))
             orderline.sort()
 
-<<<<<<< HEAD
-            quality = _calc_early_binary_ig(
-                orderline,
-                this_cls_traversed,
-                other_cls_traversed,
-                this_cls_count - this_cls_traversed,
-                other_cls_count - other_cls_traversed,
-                worst_quality,
-            )
-
-            if quality <= worst_quality:
-                return -1
-
-        quality = _calc_binary_ig(orderline, this_cls_count, other_cls_count)
-
-        return quality
-=======
             if worst_quality > 0:
                 quality = _calc_early_binary_ig(
                     orderline,
@@ -610,7 +457,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         quality = _calc_binary_ig(orderline, this_cls_count, other_cls_count)
 
         return round(quality, 12)
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
     @staticmethod
     @njit(fastmath=True, cache=True)
@@ -618,9 +464,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         shapelet_heap, candidate_shapelets, max_shapelets_per_class, cls_idx
     ):
         for shapelet in candidate_shapelets:
-<<<<<<< HEAD
-            if shapelet[4] == cls_idx and shapelet[0] > 0:
-=======
             if shapelet[5] == cls_idx and shapelet[0] > 0:
                 if (
                     len(shapelet_heap) == max_shapelets_per_class
@@ -628,7 +471,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
                 ):
                     continue
 
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
                 heapq.heappush(shapelet_heap, shapelet)
 
                 if len(shapelet_heap) > max_shapelets_per_class:
@@ -640,12 +482,6 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
         to_keep = [True] * len(shapelet_heap)
 
         for i in range(len(shapelet_heap)):
-<<<<<<< HEAD
-            for n in range(i + 1, len(shapelet_heap)):
-                if _is_self_similar(shapelet_heap[i], shapelet_heap[n]):
-                    to_keep[i] = False
-                    break
-=======
             if to_keep[i] is False:
                 continue
 
@@ -675,20 +511,8 @@ class RandomShapeletTransform(_PanelToTabularTransformer):
                     and np.array_equal(shapelets[i][6], shapelets[n][6])
                 ):
                     to_keep[n] = False
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
         return to_keep
-
-
-@njit(fastmath=True, cache=True)
-def _z_norm(shapelet):
-    std = np.std(shapelet)
-    if std > 0:
-        shapelet = (shapelet - np.mean(shapelet)) / std
-    else:
-        shapelet = np.zeros(len(shapelet))
-
-    return shapelet
 
 
 @njit(fastmath=True, cache=True)
@@ -862,22 +686,11 @@ def _binary_entropy(c1, c2):
 
 @njit(fastmath=True, cache=True)
 def _is_self_similar(s1, s2):
-<<<<<<< HEAD
-    # not self similar if from different series
-    if s1[3] != s2[3]:
-        return False
-
-    if s1[2] >= s2[2] and s1[2] <= s2[2] + s2[1]:
-        return True
-    if s2[2] >= s1[2] and s2[2] <= s1[2] + s1[1]:
-        return True
-=======
     # not self similar if from different series or dimension
     if s1[4] == s2[4] and s1[3] == s2[3]:
-        if s1[2] >= s2[2] and s1[2] <= s2[2] + s2[1]:
+        if s2[2] <= s1[2] <= s2[2] + s2[1]:
             return True
-        if s2[2] >= s1[2] and s2[2] <= s1[2] + s1[1]:
+        if s1[2] <= s2[2] <= s1[2] + s1[1]:
             return True
->>>>>>> f351d25a21d4793568b3aafb85aa2089278ccd20
 
     return False
