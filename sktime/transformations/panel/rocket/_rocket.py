@@ -39,11 +39,12 @@ class Rocket(_PanelToTabularTransformer):
     random seed (optional, default None)
     """
 
-    def __init__(self, num_kernels=10_000, normalise=True, n_jobs=1, random_state=None):
+    def __init__(self, num_kernels=10_000, normalise=True, n_jobs=1, random_state=None, kernel_type="Mixed"):
         self.num_kernels = num_kernels
         self.normalise = normalise
         self.n_jobs = n_jobs
         self.random_state = random_state if isinstance(random_state, int) else None
+        self.kernel_type = kernel_type
         super(Rocket, self).__init__()
 
     def fit(self, X, y=None):
@@ -63,7 +64,8 @@ class Rocket(_PanelToTabularTransformer):
         X = check_X(X, coerce_to_numpy=True)
         _, self.n_columns, n_timepoints = X.shape
         self.kernels = _generate_kernels(
-            n_timepoints, self.num_kernels, self.n_columns, self.random_state
+            n_timepoints, self.num_kernels, self.n_columns, self.random_state,
+            1 if self.kernel_type == "independent" else 2 if self.kernel_type == "dependent" else 0
         )
         self._is_fitted = True
         return self
@@ -84,7 +86,7 @@ class Rocket(_PanelToTabularTransformer):
         _X = check_X(X, coerce_to_numpy=True)
         if self.normalise:
             _X = (_X - _X.mean(axis=-1, keepdims=True)) / (
-                _X.std(axis=-1, keepdims=True) + 1e-8
+                    _X.std(axis=-1, keepdims=True) + 1e-8
             )
         prev_threads = get_num_threads()
         if self.n_jobs < 1 or self.n_jobs > multiprocessing.cpu_count():
@@ -97,22 +99,21 @@ class Rocket(_PanelToTabularTransformer):
         return t
 
 
-@njit(
-    "Tuple((float64[:],int32[:],float64[:],int32[:],int32[:],int32[:],"
-    "int32[:]))(int64,int64,int64,optional(int64))",
-    cache=True,
-)
-def _generate_kernels(n_timepoints, num_kernels, n_columns, seed):
+def _generate_kernels(n_timepoints, num_kernels, n_columns, seed, kernel_type=0):
     if seed is not None:
         np.random.seed(seed)
 
     candidate_lengths = np.array((7, 9, 11), dtype=np.int32)
     lengths = np.random.choice(candidate_lengths, num_kernels)
-
     num_channel_indices = np.zeros(num_kernels, dtype=np.int32)
-    for i in range(num_kernels):
-        limit = min(n_columns, lengths[i])
-        num_channel_indices[i] = 2 ** np.random.uniform(0, np.log2(limit + 1))
+    if kernel_type == 1:
+        num_channel_indices += 1
+    elif kernel_type == 2:
+        num_channel_indices = num_channel_indices + n_columns
+    else:
+        for i in range(num_kernels):
+            limit = min(n_columns, lengths[i])
+            num_channel_indices[i] = 2 ** np.random.uniform(0, np.log2(limit + 1))
 
     channel_indices = np.zeros(num_channel_indices.sum(), dtype=np.int32)
 
@@ -147,9 +148,12 @@ def _generate_kernels(n_timepoints, num_kernels, n_columns, seed):
 
         weights[a1:b1] = _weights
 
-        channel_indices[a2:b2] = np.random.choice(
-            np.arange(0, n_columns), _num_channel_indices, replace=False
-        )
+        if kernel_type == 2:
+            channel_indices[a2:b2] = list(range(0, n_columns))
+        else:
+            channel_indices[a2:b2] = np.random.choice(
+                np.arange(0, n_columns), _num_channel_indices, replace=False
+            )
 
         biases[i] = np.random.uniform(-1, 1)
 
@@ -211,7 +215,7 @@ def _apply_kernel_univariate(X, weights, length, bias, dilation, padding):
 
 @njit(fastmath=True, cache=True)
 def _apply_kernel_multivariate(
-    X, weights, length, bias, dilation, padding, num_channel_indices, channel_indices
+        X, weights, length, bias, dilation, padding, num_channel_indices, channel_indices
 ):
     n_columns, n_timepoints = X.shape
 

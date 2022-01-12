@@ -37,9 +37,9 @@ def stratified_resample(X_train, y_train, X_test, y_test, random_state):
     # count class occurrences
     unique_train, counts_train = np.unique(y_train, return_counts=True)
     unique_test, counts_test = np.unique(y_test, return_counts=True)
-    assert list(unique_train) == list(
-        unique_test
-    )  # haven't built functionality to deal with classes that exist in
+   # assert list(unique_train) == list(
+ #       unique_test
+  #  )  # haven't built functionality to deal with classes that exist in
     # test but not in train
     # prepare outputs
     X_train = pd.DataFrame()

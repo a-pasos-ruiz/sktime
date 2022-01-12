@@ -4,6 +4,7 @@
 This file is configured for runs of the main method with command line arguments, or for
 single debugging runs. Results are written in a standard format.
 """
+from sktime.classification.kernel_based import RocketClassifier
 
 __author__ = ["TonyBagnall"]
 
@@ -99,11 +100,11 @@ if __name__ == "__main__":
         )
     else:  # Local run
         print(" Local Run")
-        data_dir = "../datasets/data/"
-        results_dir = "C:/Temp/"
-        cls_name = "CIF"
-        classifier = CanonicalIntervalForest()
-        dataset = "UnitTest"
+        data_dir = "C:\\Users\\fbu19zru\\code\\Multivariate_ts\\"
+        results_dir = "C:\\Users\\fbu19zru\\code\\results_sktime"
+        cls_name = "rocket_i"
+        classifier = RocketClassifier()
+        dataset = "EthanolConcentration"
         resample = 0
         tf = False
         predefined_resample = False

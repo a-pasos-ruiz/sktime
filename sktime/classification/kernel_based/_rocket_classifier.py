@@ -134,6 +134,20 @@ class RocketClassifier(BaseClassifier):
                 random_state=self.random_state,
                 n_jobs=self._threads_to_use,
             )
+        elif self.rocket_transform == "rocket_i":
+            rocket = Rocket(
+                num_kernels=self.num_kernels,
+                random_state=self.random_state,
+                n_jobs=self._threads_to_use,
+                kernel_type="independent",
+            )
+        elif self.rocket_transform == "rocket_d":
+            rocket = Rocket(
+                num_kernels=self.num_kernels,
+                random_state=self.random_state,
+                n_jobs=self._threads_to_use,
+                kernel_type="dependent"
+            )
         elif self.rocket_transform == "minirocket":
             if n_dims > 1:
                 rocket = MiniRocketMultivariate(

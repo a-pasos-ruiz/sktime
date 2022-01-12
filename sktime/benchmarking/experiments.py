@@ -462,7 +462,7 @@ def load_and_run_classification_experiment(
             + cls_name
             + "/Predictions/"
             + dataset
-            + "/testResample"
+            + "/testFold"
             + str(resample_id)
             + ".csv"
         )
@@ -477,7 +477,7 @@ def load_and_run_classification_experiment(
                 + cls_name
                 + "/Predictions/"
                 + dataset
-                + "/trainResample"
+                + "/trainFold"
                 + str(resample_id)
                 + ".csv"
             )
