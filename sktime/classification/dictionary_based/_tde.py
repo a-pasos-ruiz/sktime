@@ -912,8 +912,9 @@ class IndividualTDE(BaseClassifier):
                 dims.append(i)
                 fin_transformers.append(transformers[i])
 
+        rng = check_random_state(self.random_state)
         if len(dims) > self.max_dims:
-            idx = self.random_state.choice(
+            idx = rng.choice(
                 len(dims),
                 self.max_dims,
                 replace=False,

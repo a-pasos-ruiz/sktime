@@ -67,8 +67,10 @@ class DimensionSelection(_PanelToTabularTransformer):
         """
         listed_dimensions = self.get_dimension_order(X, y)
         listed_dimensions.sort(key=lambda x: x['accuracy'], reverse=True)
-        id = self.get_elbow(listed_dimensions)
-        self.dimensions_selected = [d['dimension'] for d in listed_dimensions[:id]]
+        id_dim = self.get_elbow(listed_dimensions)
+        if id_dim == 0:
+            id_dim = 1
+        self.dimensions_selected = [d['dimension'] for d in listed_dimensions[:id_dim]]
         self._is_fitted = True
         return self
 
@@ -80,7 +82,7 @@ class DimensionSelection(_PanelToTabularTransformer):
 
         return X[:, self.dimensions_selected, :]
 
-    #https://stackoverflow.com/questions/2018178/finding-the-best-trade-off-point-on-a-curve
+    # https://stackoverflow.com/questions/2018178/finding-the-best-trade-off-point-on-a-curve
     def get_elbow(self, l):
         n_points = len(l)
         all_coord = np.vstack((range(n_points), [d['accuracy'] for d in l])).T
