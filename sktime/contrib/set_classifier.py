@@ -141,7 +141,7 @@ def set_classifier(cls, resample_id=None, train_file=False):
     elif name == "hc1" or name == "hivecotev1":
         return HIVECOTEV1(random_state=resample_id)
     elif name == "hc2" or name == "hivecotev2":
-        return HIVECOTEV2(random_state=resample_id)
+        return HIVECOTEV2(random_state=resample_id, time_limit_in_minutes=1440)
     elif name == "hc2ds" or name == "hivecotev2ds":
         return HIVECOTEV2DS(random_state=resample_id)
     # Interval based

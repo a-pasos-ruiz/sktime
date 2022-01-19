@@ -51,7 +51,9 @@ class HIVECOTEV2DS(BaseClassifier):
         self._pipeline = hc_pipeline = make_pipeline(
             dsRocket,
             HIVECOTEV2(random_state=self.random_state,
-                         n_jobs=self.n_jobs)
+                         n_jobs=self.n_jobs,
+                       time_limit_in_minutes=1440
+                       )
         )
         hc_pipeline.fit(X, y)
         self.num_dimensions=n_dims
