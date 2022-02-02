@@ -58,6 +58,8 @@ class HIVECOTEV2(BaseClassifier):
     Attributes
     ----------
     n_classes_ : int
+    n_classes_ : int
+    n_classes_ : int
         The number of classes.
     classes_ : list
         The unique class labels.
@@ -161,6 +163,9 @@ class HIVECOTEV2(BaseClassifier):
         self._arsenal = None
         self._tde = None
 
+        if self.verbose > 0:
+            print("HC2 created ", datetime.now().strftime("%H:%M:%S %d/%m/%Y"))  # noqa
+
         super(HIVECOTEV2, self).__init__()
 
     def _fit(self, X, y):
@@ -183,6 +188,9 @@ class HIVECOTEV2(BaseClassifier):
         Changes state by creating a fitted model that updates attributes
         ending in "_" and sets is_fitted flag to True.
         """
+
+        if self.verbose > 0:
+            print("HC2 fit started ", datetime.now().strftime("%H:%M:%S %d/%m/%Y"))  # noqa
         # Default values from HC2 paper
         if self.stc_params is None:
             self._stc_params = {"transform_limit_in_minutes": 120}
@@ -209,6 +217,10 @@ class HIVECOTEV2(BaseClassifier):
             random_state=self.random_state,
             n_jobs=self._threads_to_use,
         )
+
+        if self.verbose > 0:
+            print("STC started", datetime.now().strftime("%H:%M:%S %d/%m/%Y"))  # noqa
+
         self._stc.fit(X, y)
 
         if self.verbose > 0:
@@ -233,6 +245,9 @@ class HIVECOTEV2(BaseClassifier):
             random_state=self.random_state,
             n_jobs=self._threads_to_use,
         )
+        if self.verbose > 0:
+            print("DrCIF started ", datetime.now().strftime("%H:%M:%S %d/%m/%Y"))  # noqa
+
         self._drcif.fit(X, y)
 
         if self.verbose > 0:
@@ -257,6 +272,10 @@ class HIVECOTEV2(BaseClassifier):
             random_state=self.random_state,
             n_jobs=self._threads_to_use,
         )
+
+        if self.verbose > 0:
+            print("Arsenal started ", datetime.now().strftime("%H:%M:%S %d/%m/%Y"))  # noqa
+
         self._arsenal.fit(X, y)
 
         if self.verbose > 0:
@@ -281,6 +300,9 @@ class HIVECOTEV2(BaseClassifier):
             random_state=self.random_state,
             n_jobs=self._threads_to_use,
         )
+        if self.verbose > 0:
+            print("TDE started ", datetime.now().strftime("%H:%M:%S %d/%m/%Y"))  # noqa
+
         self._tde.fit(X, y)
 
         if self.verbose > 0:

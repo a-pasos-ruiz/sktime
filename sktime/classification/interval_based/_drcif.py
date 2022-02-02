@@ -516,6 +516,8 @@ class DrCIF(BaseClassifier):
             )
         else:
             transformed_x = np.nan_to_num(transformed_x, False, 0, 0, 0)
+
+        transformed_x[np.isnan(transformed_x)] = 0
         tree.fit(transformed_x, y)
 
         return [
