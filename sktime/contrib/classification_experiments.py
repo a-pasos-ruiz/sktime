@@ -100,11 +100,11 @@ if __name__ == "__main__":
         )
     else:  # Local run
         print(" Local Run")
-        data_dir = "C:\\Users\\fbu19zru\\code\\Multivariate_ts\\"
-        results_dir = "C:\\Users\\fbu19zru\\code\\results_sktime"
-        cls_name = "rocket_i"
+        data_dir = "C:\\Users\\apr16\\OneDrive\\Documents\\Multivariate_ts\\"
+        results_dir = "C:\\Users\\apr16\\OneDrive\\Documents\\results_sktime"
+        cls_name = "hc2-ds-random"
         classifier = RocketClassifier()
-        dataset = "EthanolConcentration"
+        dataset = "BasicMotions"
         resample = 0
         tf = False
         predefined_resample = False

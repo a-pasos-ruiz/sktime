@@ -5,7 +5,7 @@ import numpy as np
 from numpy import matlib as mb
 
 from sktime.transformations.base import _PanelToTabularTransformer
-
+import time
 __author__ = "Alejandro Pasos Ruiz"
 __all__ = ["DimensionSelection"]
 
@@ -16,8 +16,10 @@ class DimensionSelection(_PanelToTabularTransformer):
         self.verbose = verbose
         self.dimensions_selected = None
         self._is_fitted = False
+        self.train_time = 0
 
     def fit(self, X, y=None):
+        start = int(round(time.time() * 1000))
         listed_dimensions = self.get_dimension_order(X, y)
         listed_dimensions.sort(key=lambda x: x['accuracy'], reverse=True)
         id_dim = self.get_elbow(listed_dimensions) + 1
@@ -26,7 +28,7 @@ class DimensionSelection(_PanelToTabularTransformer):
             print("Selected dimensions ", len(self.dimensions_selected), " list: ", self.dimensions_selected, " ",
                   datetime.now().strftime("%H:%M:%S %d/%m/%Y"),
                   )
-
+        self.train_time = int(round(time.time() * 1000)) - start
         self._is_fitted = True
         return self
 

@@ -13,6 +13,7 @@ __all__ = ["RandomDimensionSelection"]
 from sktime.transformations.base import _PanelToTabularTransformer
 from random import sample
 import math
+import time
 
 
 class RandomDimensionSelection(_PanelToTabularTransformer):
@@ -24,10 +25,13 @@ class RandomDimensionSelection(_PanelToTabularTransformer):
         self.random_selection = 0.2
         self.dimensions_selected = None
         self._is_fitted = False
+        self.train_time = 0
 
     def fit(self, X, y=None):
+        start = int(round(time.time() * 1000))
         _, n, _ = X.shape
         self.dimensions_selected = sample(range(n), math.ceil(n * self.random_selection))
+        self.train_time = int(round(time.time() * 1000)) - start
         self._is_fitted = True
         return self
 
