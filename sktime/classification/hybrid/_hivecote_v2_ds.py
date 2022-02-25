@@ -23,13 +23,16 @@ class HIVECOTEV2DS(BaseClassifier):
     def __init__(self, random_state=None,
                  n_jobs=1,
                  time_limit_in_minutes=0,
+                 ds_train_time = 0,
+                 ds_num_selected_dimensions = 0,
+                 ds_num_dimensions = 0,
                  ds_transformer=None):
         self.random_state = random_state
         self.n_jobs = n_jobs
         self.time_limit_in_minutes = time_limit_in_minutes
-        self.ds_train_time = 0
-        self.ds_num_selected_dimensions = 0
-        self.ds_num_dimensions = 0
+        self.ds_train_time = ds_train_time
+        self.ds_num_selected_dimensions = ds_num_selected_dimensions
+        self.ds_num_dimensions = ds_num_dimensions
         self.ds_transformer = ds_transformer
         self._pipeline = None
         super(HIVECOTEV2DS, self).__init__()
