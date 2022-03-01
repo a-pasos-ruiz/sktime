@@ -43,7 +43,8 @@ from sktime.classification.kernel_based import Arsenal, RocketClassifier
 from sktime.classification.shapelet_based import ShapeletTransformClassifier
 from sktime.transformations.series.summarize import SummaryTransformer
 
-from sktime.transformations.panel.dev import DSRocket, RandomDimensionSelection
+from sktime.transformations.panel.dev import DSRocket, RandomDimensionSelection, ecs, ecp, kmeans
+
 
 def set_classifier(cls, resample_id=None, train_file=False):
     """Construct a classifier, possibly seeded.
@@ -146,6 +147,12 @@ def set_classifier(cls, resample_id=None, train_file=False):
         return HIVECOTEV2(random_state=resample_id, time_limit_in_minutes=60, verbose=1)
     elif name == "hc2-ds-rocket" or name == "hivecotev2dsrocket":
         return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=60, ds_transformer=DSRocket())
+    elif name == "hc2-ds-ecs" or name == "hivecotev2dsecs":
+        return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=0, ds_transformer=ecs())
+    elif name == "hc2-ds-kmeans" or name == "hivecotev2dskmeans":
+        return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=0, ds_transformer=kmeans())
+    elif name == "hc2-ds-ecp" or name == "hivecotev2dsecp":
+        return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=0, ds_transformer=ecp())
     elif name == "hc2-ds-random" or name == "hivecotev2dsrandom":
         return HIVECOTEV2DS(random_state=resample_id,  ds_transformer=RandomDimensionSelection())
     elif name == "rocket-ds-rocket" or name == "rocketdsrocket":
