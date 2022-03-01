@@ -31,7 +31,7 @@ from sktime.classification.feature_based import (
     TSFreshClassifier,
 )
 from sktime.classification.hybrid import HIVECOTEV1, HIVECOTEV2, HIVECOTEV2DSRANDOM, \
-    HIVECOTEV2DSROCKET, HIVECOTEV2DS
+    HIVECOTEV2DSROCKET, HIVECOTEV2DS, ROCKETDS
 from sktime.classification.interval_based import (
     CanonicalIntervalForest,
     DrCIF,
@@ -148,6 +148,8 @@ def set_classifier(cls, resample_id=None, train_file=False):
         return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=60, ds_transformer=DSRocket())
     elif name == "hc2-ds-random" or name == "hivecotev2dsrandom":
         return HIVECOTEV2DS(random_state=resample_id,  ds_transformer=RandomDimensionSelection())
+    elif name == "rocket-ds-rocket" or name == "rocketdsrocket":
+        return ROCKETDS(random_state=resample_id, ds_transformer=DSRocket())
     # Interval based
     elif name == "rise" or name == "randomintervalspectralforest":
         return RandomIntervalSpectralForest(random_state=resample_id, n_estimators=500)
