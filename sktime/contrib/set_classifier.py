@@ -146,7 +146,7 @@ def set_classifier(cls, resample_id=None, train_file=False):
     elif name == "hc2" or name == "hivecotev2":
         return HIVECOTEV2(random_state=resample_id, time_limit_in_minutes=60, verbose=1)
     elif name == "hc2-ds-rocket" or name == "hivecotev2dsrocket":
-        return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=60, ds_transformer=DSRocket())
+        return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=60, ds_transformer=DSRocket(verbose=1))
     elif name == "hc2-ds-ecs" or name == "hivecotev2dsecs":
         return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=0, ds_transformer=ecs())
     elif name == "hc2-ds-kmeans" or name == "hivecotev2dskmeans":
