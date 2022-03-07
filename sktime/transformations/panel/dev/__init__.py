@@ -3,12 +3,14 @@
 __all__ = [
     "DSRocket",
     "DSRandom",
+    "DSCluster",
     "ecs",
     "kmeans",
     "ecp"
 ]
 
 from sktime.transformations.panel.dev._rocket_selection import DSRocket
+from sktime.transformations.panel.dev._cluster_selection import DSCluster
 from sktime.transformations.panel.dev._ds import DimensionSelection
 from sktime.transformations.panel.dev._random_ds import RandomDimensionSelection
 from sktime.transformations.panel.dev.cs import ecs
