@@ -3,16 +3,20 @@
 __all__ = [
     "DSRocket",
     "DSRandom",
+    "DSFile",
     "DSCluster",
     "ecs",
     "kmeans",
-    "ecp"
+    "ecp",
+    "DSMeritScore"
 ]
 
 from sktime.transformations.panel.dev._rocket_selection import DSRocket
 from sktime.transformations.panel.dev._cluster_selection import DSCluster
 from sktime.transformations.panel.dev._ds import DimensionSelection
 from sktime.transformations.panel.dev._random_ds import RandomDimensionSelection
+from sktime.transformations.panel.dev._file_ds import FileDimensionSelection
 from sktime.transformations.panel.dev.cs import ecs
 from sktime.transformations.panel.dev.cs import kmeans
 from sktime.transformations.panel.dev.cs import ecp
+from sktime.transformations.panel.dev._merit_score_selection import DSMeritScore

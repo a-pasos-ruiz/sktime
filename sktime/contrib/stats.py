@@ -3,42 +3,26 @@ import numpy as np
 
 datasets = [
     "ArticularyWordRecognition",
-    "AtrialFibrillation",
-    "BasicMotions",
-    "Cricket",
     "DuckDuckGeese",
-    #	"EigenWorms",
-    "EMO",
-    "Epilepsy",
-    "EthanolConcentration",
-    "ERing",
-    #	"FaceDetection",
-    "FingerMovements",
-    "HAR",
-    "HandMovementDirection",
-    "Handwriting",
-    "Heartbeat",
-    #    "InsectWingbeatEq",
-    "JapaneseVowelsEq",
-    "Libras",
-    "LSST",
-    "MotorImagery",
-    "MindReading",
-    "NATOPS",
-    "PenDigitsEq",
-    "PEMS-SF",
-    "PhonemeSpectra",
-    "RacketSports",
-    "Siemens",
-    "SelfRegulationSCP1",
-    "SelfRegulationSCP2",
-    "SpokenArabicDigitsEq",
-    "StandWalkJump",
-    "UWaveGestureLibrary"
+   # "EMO",
+    # "FaceDetection",
+   "FingerMovements",
+  #"HAR",
+   "HandMovementDirection",
+   "Heartbeat",
+   #"InsectWingBeatEq",
+   "JapaneseVowelsEq",
+   "MotorImagery",
+   "MindReading",
+   "NATOPS",
+   "PEMS-SF",
+  # "PhonemeSpectra",
+  # "Siemens",
+  # "SpokenArabicDigitsEq"
 ]
 resample = 30
 path = "C:\\Users\\fbu19zru\\code\\results_final\\"
-algorithm = "hc2-ds-ecp"
+algorithm = "hc2-ds-cluster"
 
 
 def read_file(dataset, resample):
@@ -55,9 +39,11 @@ def read_file(dataset, resample):
 def read_dataset(dataset):
     data = [read_file(dataset, i) for i in range(1, 30)]
     data2 = [x[1] / x[0] for x in data]
-    data3 = [x[2] for x in data]
-    print(dataset, np.mean(data2), np.mean(data3))
-
+    data3 = [x[1] for x in data]
+    data4 = [x[0] for x in data]
+    data5 = [x[2] for x in data]
+    print(dataset, np.mean(data3), np.mean(data4), np.mean(data2),np.mean(data5))
+    #print( np.mean(data5))
 
 
 for dataset in datasets:

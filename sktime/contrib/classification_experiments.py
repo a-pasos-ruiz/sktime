@@ -91,7 +91,7 @@ if __name__ == "__main__":
         load_and_run_classification_experiment(
             problem_path=data_dir,
             results_path=results_dir,
-            classifier=set_classifier(classifier, resample, tf),
+            classifier=set_classifier(classifier, resample, tf, results_dir, classifier,dataset, resample),
             cls_name=classifier,
             dataset=dataset,
             resample_id=resample,

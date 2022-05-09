@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import math
 from datetime import datetime
 from abc import abstractmethod
 import numpy as np
 from numpy import matlib as mb
+from bisect import bisect_right
 
 from sktime.transformations.base import _PanelToTabularTransformer
 import time
@@ -20,10 +22,14 @@ class DimensionSelection(_PanelToTabularTransformer):
 
     def fit(self, X, y=None):
         start = int(round(time.time() * 1000))
+        _, n_dims, _ = X.shape
         listed_dimensions = self.get_dimension_order(X, y)
         listed_dimensions.sort(key=lambda x: x['accuracy'], reverse=True)
         id_dim = self.get_elbow(listed_dimensions) + 1
-        self.dimensions_selected = [d['dimension'] for d in listed_dimensions[:id_dim]]
+        list_sorted = list(map(lambda x: x['accuracy'], listed_dimensions))
+        list_sorted.reverse()
+        positive_index = len(list_sorted) - bisect_right(list_sorted, 0)
+        self.dimensions_selected = [d['dimension'] for d in listed_dimensions[:min(id_dim, positive_index)]]
         if self.verbose > 0:
             print("Selected dimensions ", len(self.dimensions_selected), " list: ", self.dimensions_selected, " ",
                   datetime.now().strftime("%H:%M:%S %d/%m/%Y"),

@@ -43,10 +43,13 @@ from sktime.classification.kernel_based import Arsenal, RocketClassifier
 from sktime.classification.shapelet_based import ShapeletTransformClassifier
 from sktime.transformations.series.summarize import SummaryTransformer
 
-from sktime.transformations.panel.dev import DSRocket, RandomDimensionSelection, ecs, ecp, kmeans, DSCluster
+from sktime.transformations.panel.dev import DSRocket, RandomDimensionSelection, ecs, ecp, DSMeritScore, kmeans, DSCluster, \
+    FileDimensionSelection
 
 
-def set_classifier(cls, resample_id=None, train_file=False):
+
+def set_classifier(cls, resample_id=None, train_file=False,  ,results_dir=None,classifier=None,dataset=None,
+                   resample=None):
     """Construct a classifier, possibly seeded.
 
     Basic way of creating the classifier to build using the default settings. This
@@ -155,8 +158,13 @@ def set_classifier(cls, resample_id=None, train_file=False):
         return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=0, ds_transformer=kmeans())
     elif name == "hc2-ds-ecp" or name == "hivecotev2dsecp":
         return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=0, ds_transformer=ecp())
+    elif name == "hc2-ds-merit" or name == "hivecotev2dsmerit":
+        return HIVECOTEV2DS(random_state=resample_id, time_limit_in_minutes=0, ds_transformer=DSMeritScore())
     elif name == "hc2-ds-random" or name == "hivecotev2dsrandom":
         return HIVECOTEV2DS(random_state=resample_id,  ds_transformer=RandomDimensionSelection())
+    elif name == "hc2-ds-file" or name == "hivecotev2dsfile":
+        return HIVECOTEV2DS(random_state=resample_id,
+                            ds_transformer=FileDimensionSelection(results_dir, classifier,dataset, resample))
     elif name == "rocket-ds-rocket" or name == "rocketdsrocket":
         return ROCKETDS(random_state=resample_id, ds_transformer=DSRocket())
     # Interval based
