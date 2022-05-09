@@ -18,6 +18,8 @@ from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import accuracy_score
 from sklearn.metrics.cluster import adjusted_mutual_info_score
 from itertools import combinations, product, accumulate, chain
+import time
+from numpy import matlib as mb
 
 __author__ = "Alejandro Pasos Ruiz"
 __all__ = ["DSRocket"]
@@ -37,6 +39,8 @@ class DSMeritScore(_PanelToTabularTransformer):
     def fit(self, X, y=None):
         start = int(round(time.time() * 1000))
         _, n_dims, _ = X.shape
+        self.predictions = [[] for i in range(n_dims)]
+        self.feature_to_class = [0 for i in range(n_dims)]
         rocket_pipeline = make_pipeline(
             MiniRocketMultivariate(),
             StandardScaler(with_mean=False),
@@ -76,25 +80,26 @@ class DSMeritScore(_PanelToTabularTransformer):
         dims = list(combinations([x for x in range(n_dims)], 1))
         comb = list(combinations([x for x in range(n_dims)], 2))
 
-        subsets = [{"subset":subset,"score":self.get_score(subset)} for subset in comb)]
+        subsets = [{"subset":subset,"score":self.get_score(subset)} for subset in comb]
         subsets.sort(key=lambda x: x['score'], reverse=True)
-        best_score = subsets[0].score
-        best_score_new = subsets[0].score
+        best_score = subsets[0]['score']
+        best_score_new = subsets[0]['score']
         id_dim = self.get_elbow(subsets) + 1
         subsets_list = [d['subset'] for d in subsets[:id_dim]]
 
-        while best_score<=best_score_new:
-            subsets_list  = [list((map(lambda x: x + y, subsets_list))) for y in dims]
+        while best_score <= best_score_new and best_score < 1:
+            best_score = best_score_new
+            subsets_list = [list((map(lambda x: x + y, subsets_list))) for y in dims]
             subsets_list = [item for sublist in subsets_list for item in sublist]
             subsets_list2 = list(filter(lambda x: len(x) == len(set(x)), subsets_list))
 
-            subsets = [{"subset": subset, "score": self.get_score(subset)} for subset in subsets_list2)]
+            subsets = [{"subset": subset, "score": self.get_score(subset)} for subset in subsets_list2]
             subsets.sort(key=lambda x: x['score'], reverse=True)
             best_score_new = subsets[0]['score']
             id_dim = self.get_elbow(subsets) + 1
             subsets_list = [d['subset'] for d in subsets[:id_dim]]
 
-
+        return subsets[0]['subset']
 
     def get_score(self, subset):
         k = len(subset)
