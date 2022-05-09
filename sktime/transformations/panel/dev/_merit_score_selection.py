@@ -20,6 +20,7 @@ from sklearn.metrics.cluster import adjusted_mutual_info_score
 from itertools import combinations, product, accumulate, chain
 import time
 from numpy import matlib as mb
+from datetime import datetime
 
 __author__ = "Alejandro Pasos Ruiz"
 __all__ = ["DSRocket"]
@@ -27,7 +28,7 @@ __all__ = ["DSRocket"]
 
 class DSMeritScore(_PanelToTabularTransformer):
 
-    def __init__(self, verbose=0):
+    def __init__(self, verbose=1):
         self.verbose = verbose
         self.dimensions_selected = None
         self._is_fitted = False
@@ -54,7 +55,7 @@ class DSMeritScore(_PanelToTabularTransformer):
             self.feature_to_class[i] = adjusted_mutual_info_score(y, self.predictions[i])
 
             if self.verbose > 0:
-                print("feature ", i, "to-class: ", feature_to_class[i], " ",
+                print("feature ", i, "to-class: ", self.feature_to_class[i], " ",
                       datetime.now().strftime("%H:%M:%S %d/%m/%Y"),
                       )
 
@@ -64,10 +65,10 @@ class DSMeritScore(_PanelToTabularTransformer):
                 self.feature_to_feature[j][i] = self.feature_to_feature[i][j]
 
         self.dimensions_selected = self.forward_selection(n_dims)
-        # if self.verbose > 0:
-        #    print("Selected dimensions ", len(self.dimensions_selected), " list: ", self.dimensions_selected, " ",
-        #          datetime.now().strftime("%H:%M:%S %d/%m/%Y"),
-        #          )
+        if self.verbose > 0:
+            print("Selected dimensions ", len(self.dimensions_selected), " list: ", self.dimensions_selected, " ",
+                  datetime.now().strftime("%H:%M:%S %d/%m/%Y"),
+                  )
         self.train_time = int(round(time.time() * 1000)) - start
         self._is_fitted = True
         return self
@@ -80,14 +81,14 @@ class DSMeritScore(_PanelToTabularTransformer):
         dims = list(combinations([x for x in range(n_dims)], 1))
         comb = list(combinations([x for x in range(n_dims)], 2))
 
-        subsets = [{"subset":subset,"score":self.get_score(subset)} for subset in comb]
+        subsets = [{"subset": subset, "score": self.get_score(subset)} for subset in comb]
         subsets.sort(key=lambda x: x['score'], reverse=True)
-        best_score = subsets[0]['score']
+        best_score = 0
         best_score_new = subsets[0]['score']
         id_dim = self.get_elbow(subsets) + 1
-        subsets_list = [d['subset'] for d in subsets[:id_dim]]
+        subsets_list = [d['subset'] for d in subsets[:min(id_dim, 20)]]
 
-        while best_score <= best_score_new and best_score < 1:
+        while best_score < best_score_new and best_score < 1:
             best_score = best_score_new
             subsets_list = [list((map(lambda x: x + y, subsets_list))) for y in dims]
             subsets_list = [item for sublist in subsets_list for item in sublist]
@@ -97,16 +98,20 @@ class DSMeritScore(_PanelToTabularTransformer):
             subsets.sort(key=lambda x: x['score'], reverse=True)
             best_score_new = subsets[0]['score']
             id_dim = self.get_elbow(subsets) + 1
-            subsets_list = [d['subset'] for d in subsets[:id_dim]]
+            subsets_list = [d['subset'] for d in subsets[:min(id_dim, 20)]]
 
+        if self.verbose > 0:
+            print("Best so far ", subsets[0]['score'], " list: ", subsets[0]['subset'], " ",
+                  datetime.now().strftime("%H:%M:%S %d/%m/%Y"),
+                  )
         return subsets[0]['subset']
 
     def get_score(self, subset):
         k = len(subset)
         cf = np.mean([self.feature_to_class[i] for i in list(subset)])
-        pairs = list(combinations(subset,2))
+        pairs = list(combinations(subset, 2))
         ff = np.mean([self.feature_to_feature[t[0]][t[1]] for t in pairs])
-        return (k*cf)/(math.sqrt(k+k*(k-1)*ff))
+        return (k * cf) / (math.sqrt(k + k * (k - 1) * ff))
 
     # https://stackoverflow.com/questions/2018178/finding-the-best-trade-off-point-on-a-curve
     @staticmethod
