@@ -50,14 +50,14 @@ def print_size(dataset):
     for key, value in X_train.iterrows():
        # print(key, value)
         for key2, value2 in value.iteritems():
-            #print(key2, len(value2))
+            print(key2, len(value2))
             sizes.append(len(value2))
 
 
     for key, value in X_test.iterrows():
         #print(key, value)
         for key2, value2 in value.iteritems():
-            #print(key2, len(value2))
+            print(key2, len(value2))
             sizes.append(len(value2))
 
     return int(np.mean(sizes))
@@ -66,4 +66,4 @@ size = print_size("InsectWingbeat")
 print(size)
 convert_to_equal_length("InsectWingbeat",
                         ["Aedes_female", "Aedes_male", "Fruit_flies", "House_flies", "Quinx_female", "Quinx_male", "Stigma_female", "Stigma_male", "Tarsalis_female", "Tarsalis_male"],
-                        20)
+                        size)
